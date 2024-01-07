@@ -5,6 +5,7 @@ export default function Home() {
   const [task, setTask] = useState('');
   const [call_id, setCallId] = useState(null);
   const [calls, setCalls] = useState([]);
+  const [callFailed, setCallFailed] = useState(false);
 
   useEffect(() => {
     fetchCalls();
@@ -44,6 +45,7 @@ export default function Home() {
 
   const handleStartCall = async (e) => {
     e.preventDefault();
+    setCallFailed(false); // Reset call failed state on new attempt
     try {
       const response = await fetch('/api/start-call', {
         method: 'POST',
@@ -52,19 +54,28 @@ export default function Home() {
         },
         body: JSON.stringify({ phoneNumber, task }),
       });
+  
+      // Check if the response status indicates a failure
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+  
       const data = await response.json();
-      console.log('API response:', data);
-
+  
       if (data && data.call_id) {
         setCallId(data.call_id);
         console.log('Call started, ID:', data.call_id);
       } else {
+        // Handle the case where call_id isn't present in the response
         console.log('No call_id received');
+        setCallFailed(true);
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error making the call:', error);
+      setCallFailed(true);
     }
   };
+  
 
   const handleEndCall = async () => {
     try {
@@ -146,12 +157,12 @@ export default function Home() {
           >
             End Call
           </button>
-          <button
-            onClick={handleFetchLogs}
-            className="flex-1 bg-blue-600 text-white p-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
-          >
-            Fetch Call Logs
-          </button>
+           {/* Error Message */}
+      {callFailed && (
+        <div className="text-center text-red-500">
+          Call failed. Unable to connect to the API.
+        </div>
+      )}
         </div>
       )}
   
