@@ -4,7 +4,7 @@ export default async function handler(req, res) {
       const options = {
         method: 'GET',
         headers: {
-          'authorization': process.env.BLAND_AI_API_KEY, // Ensure this is set in your environment variables
+          'authorization': process.env.NEXT_PUBLIC_BLAND_AI_API_KEY, // Ensure this is set in your environment variables
         },
       };
   

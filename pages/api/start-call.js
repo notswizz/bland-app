@@ -3,15 +3,15 @@ export default async function handler(req, res) {
     const options = {
       method: 'POST',
       headers: {
-        'authorization': process.env.BLAND_AI_API_KEY, // Ensure this is set in your environment variables
+        'authorization': process.env.NEXT_PUBLIC_BLAND_AI_API_KEY, // Ensure this is set in your environment variables
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         phone_number: req.body.phoneNumber,
         task: req.body.task,
    from: '+14048827923',
-   reduce_latency: true,
-   voice_id:5,
+   reduce_latency: false,
+   voice_id:8,
    wait_for_greeting:true,
    record:true
       })

@@ -11,18 +11,26 @@ const CallTranscriptModal = ({ showModal, callId, onClose }) => {
 
       const options = {
         method: 'GET',
-        headers: { authorization: `Bearer ${process.env.NEXT_PUBLIC_BLAND_AI_API_KEY}` } // Use the environment variable here
+        headers: { authorization: `${process.env.NEXT_PUBLIC_BLAND_AI_API_KEY}` }
       };
 
       fetch(`https://api.bland.ai/v1/calls/${callId}`, options)
         .then(response => {
           if (!response.ok) {
-            throw new Error('Network response was not ok');
+            throw new Error(`Network response was not ok, status: ${response.status}`);
           }
           return response.json();
         })
         .then(data => {
-          setCallTranscript(data.transcript || 'No transcript available.');
+          // Process the transcripts array
+          if (data && data.transcripts) {
+            const transcriptText = data.transcripts
+              .map(t => `${new Date(t.created_at).toLocaleTimeString()}: ${t.text} (${t.user})`)
+              .join('\n');
+            setCallTranscript(transcriptText);
+          } else {
+            setCallTranscript('No transcript available.');
+          }
           setIsLoading(false);
         })
         .catch(err => {

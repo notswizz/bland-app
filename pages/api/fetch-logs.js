@@ -1,16 +1,13 @@
-import Bland from 'bland-voice';
-
-const bland = new Bland(process.env.BLAND_AI_API_KEY);
-
 export default async function handler(req, res) {
   if (req.method === 'POST') {
-    const { call_id, poll } = req.body;
+    const { call_id } = req.body;
 
     try {
-      // Replace this with the actual implementation of fetchLogs
-      const logs = await fetchLogs(call_id, poll);
-      res.status(200).json({ logs });
+      // Fetch logs using the Bland API directly
+      const logs = await fetchLogs(call_id);
+      res.status(200).json(logs);
     } catch (error) {
+      console.error('Error fetching logs:', error);
       res.status(500).json({ error: error.message });
     }
   } else {
@@ -18,9 +15,18 @@ export default async function handler(req, res) {
   }
 }
 
-async function fetchLogs(call_id, poll) {
-  // Implement the logic to fetch logs here.
-  // If 'poll' is true, you might set up a loop to continually poll for logs.
-  // This is a placeholder implementation.
-  return await bland.fetchCallLogs(call_id, poll);
+async function fetchLogs(call_id) {
+  const options = {
+    method: 'GET',
+    headers: { authorization: `${process.env.NEXT_PUBLIC_BLAND_AI_API_KEY}` }
+  };
+
+  const response = await fetch(`https://api.bland.ai/v1/calls/${call_id}`, options);
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+  // Print the data to the console for debugging
+  console.log("Transcript Data:", data);
+
+  return await response.json();
 }

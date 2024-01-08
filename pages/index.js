@@ -9,8 +9,11 @@ export default function Home() {
   const [callFailed, setCallFailed] = useState(false);
   const [callErrorMessage, setCallErrorMessage] = useState('');
   const [selectedCallId, setSelectedCallId] = useState(null);
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [callTranscript, setCallTranscript] = useState('');
   const [showTranscriptModal, setShowTranscriptModal] = useState(false);
+
 
 
 
@@ -50,24 +53,41 @@ export default function Home() {
     return `${formattedDate} at ${formattedTime}`;
   }
 
-  const handleFetchTranscript = (callId) => {
+  const fetchCallTranscript = (callId) => {
+    setIsLoading(true);
+
     const options = {
-      method: 'GET',
-      headers: { authorization: 'Bearer <Your-API-Token>' } // Replace with your actual token
+        method: 'GET',
+        headers: { authorization: `${process.env.NEXT_PUBLIC_BLAND_AI_API_KEY}` }
     };
 
     fetch(`https://api.bland.ai/v1/calls/${callId}`, options)
-      .then(response => response.json())
-      .then(data => {
-        setCallTranscript(data.transcript || 'No transcript available.');
-        setShowTranscriptModal(true);
-      })
-      .catch(err => {
-        console.error(err);
-        setCallErrorMessage('Failed to fetch transcript');
-        setCallFailed(true);
-      });
-  };
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Network response was not ok, status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data && data.transcripts) {
+                const transcriptText = data.transcripts
+                    .map(t => `${new Date(t.created_at).toLocaleTimeString()}: ${t.text} (${t.user})`)
+                    .join('\n');
+                setCallTranscript(transcriptText);
+            } else {
+                setCallTranscript('No transcript available.');
+            }
+            setShowTranscriptModal(true);
+        })
+        .catch(err => {
+            setError(err.message);
+        })
+        .finally(() => {
+            setIsLoading(false);
+        });
+};
+
+
 
   // Function to open the modal and fetch transcript
   const handleCallClick = (callId) => {
@@ -225,7 +245,7 @@ export default function Home() {
           <td className="py-3 px-6">{formatCreatedAt(call.created_at)}</td>
           <td className="py-3 px-6">
             <button
-              onClick={() => handleFetchTranscript(call.c_id)}
+              onClick={() => fetchCallTranscript(call.c_id)}
               className="text-indigo-600 hover:text-indigo-900"
             >
               View Transcript
@@ -241,6 +261,7 @@ export default function Home() {
   callTranscript={callTranscript}
   onClose={handleCloseModal}
 />
+
 
     </div>
   );

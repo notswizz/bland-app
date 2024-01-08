@@ -1,6 +1,6 @@
 import Bland from 'bland-voice';
 
-const bland = new Bland(process.env.BLAND_AI_API_KEY);
+const bland = new Bland(process.env.NEXT_PUBLIC_BLAND_AI_API_KEY);
 
 export default async function handler(req, res) {
   if (req.method === 'POST') {
