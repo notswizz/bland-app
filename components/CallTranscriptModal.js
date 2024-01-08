@@ -6,6 +6,7 @@ const CallTranscriptModal = ({ showModal, callId, onClose }) => {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    console.log('Modal visibility:', showModal, 'Call ID:', callId);
     if (showModal && callId) {
       setIsLoading(true);
 

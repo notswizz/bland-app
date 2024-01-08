@@ -25,6 +25,7 @@ export default function Home() {
     try {
       const response = await fetch('/api/get-calls');
       const data = await response.json();
+      console.log('API Response - fetchCalls:', data);
       if (data && Array.isArray(data.calls)) {
         setCalls(data.calls);
       } else {
@@ -53,7 +54,7 @@ export default function Home() {
     return `${formattedDate} at ${formattedTime}`;
   }
 
-  const fetchCallTranscript = (callId) => {
+  const fetchCallTranscript = (call_Id) => {
     setIsLoading(true);
 
     const options = {
@@ -61,7 +62,7 @@ export default function Home() {
         headers: { authorization: `${process.env.NEXT_PUBLIC_BLAND_AI_API_KEY}` }
     };
 
-    fetch(`https://api.bland.ai/v1/calls/${callId}`, options)
+    fetch(`https://api.bland.ai/v1/calls/${call_Id}`, options)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`Network response was not ok, status: ${response.status}`);
@@ -69,6 +70,7 @@ export default function Home() {
             return response.json();
         })
         .then(data => {
+          console.log('Transcript data received:', data);
             if (data && data.transcripts) {
                 const transcriptText = data.transcripts
                     .map(t => `${new Date(t.created_at).toLocaleTimeString()}: ${t.text} (${t.user})`)
@@ -90,10 +92,12 @@ export default function Home() {
 
 
   // Function to open the modal and fetch transcript
-  const handleCallClick = (callId) => {
-    setSelectedCallId(callId);
-    fetchCallTranscript(callId);
-  };
+const handleCallClick = (call_Id) => {
+  console.log('Call clicked with ID:', call_Id);
+  setSelectedCallId(call_Id);
+  fetchCallTranscript(call_Id);
+};
+
 
   const handleCloseModal = () => {
     setShowTranscriptModal(false);
