@@ -56,7 +56,11 @@ export default function Home() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ phoneNumber, task }),
+        body: JSON.stringify({
+          phoneNumber, 
+          task,
+          // Include additional fields here as required by your updated API
+        }),
       });
 
       if (!response.ok) {
