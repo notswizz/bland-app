@@ -6,6 +6,8 @@ export default function Home() {
   const [call_id, setCallId] = useState(null);
   const [calls, setCalls] = useState([]);
   const [callFailed, setCallFailed] = useState(false);
+  const [callErrorMessage, setCallErrorMessage] = useState('');
+
 
   useEffect(() => {
     fetchCalls();
@@ -45,7 +47,9 @@ export default function Home() {
 
   const handleStartCall = async (e) => {
     e.preventDefault();
-    setCallFailed(false); // Reset call failed state on new attempt
+    setCallFailed(false);
+    setCallErrorMessage(''); // Reset the error message
+
     try {
       const response = await fetch('/api/start-call', {
         method: 'POST',
@@ -54,27 +58,30 @@ export default function Home() {
         },
         body: JSON.stringify({ phoneNumber, task }),
       });
-  
-      // Check if the response status indicates a failure
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Call failed');
       }
-  
+
       const data = await response.json();
-  
+
       if (data && data.call_id) {
         setCallId(data.call_id);
         console.log('Call started, ID:', data.call_id);
+        // Here you can add any additional logic needed after starting the call
       } else {
-        // Handle the case where call_id isn't present in the response
-        console.log('No call_id received');
         setCallFailed(true);
+        setCallErrorMessage('No call_id received or call failed to start.');
       }
     } catch (error) {
       console.error('Error making the call:', error);
       setCallFailed(true);
+      setCallErrorMessage(error.message);
     }
-  };
+};
+
+  
   
 
   const handleEndCall = async () => {
@@ -94,30 +101,16 @@ export default function Home() {
     }
   };
 
-  const handleFetchLogs = async () => {
-    if (!call_id) {
-      console.error('No active call to fetch logs for.');
-      return;
-    }
-  
-    try {
-      const response = await fetch('/api/fetch-logs', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ call_id, poll: false }), // Set 'poll' as needed
-      });
-      const data = await response.json();
-      console.log('Call Logs:', data.logs);
-    } catch (error) {
-      console.error('Error fetching logs:', error);
-    }
-  };
-
+ 
   
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gray-100 p-4 space-y-6">
+    {/* Show call failed notification if callFailed is true */}
+    {callFailed && (
+      <div className="text-red-500 mb-4">
+        Call failed. Please try again later.
+      </div>
+    )}
       {/* Form */}
       <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-lg">
         <form onSubmit={handleStartCall} className="space-y-4">
@@ -157,6 +150,11 @@ export default function Home() {
           >
             End Call
           </button>
+          {callFailed && (
+      <div className="text-red-500 mb-4">
+        Call failed: {callErrorMessage}
+      </div>
+    )}
            {/* Error Message */}
       {callFailed && (
         <div className="text-center text-red-500">

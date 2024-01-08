@@ -1,4 +1,3 @@
-// pages/api/start-call.js
 import Bland from 'bland-voice';
 
 const bland = new Bland(process.env.BLAND_AI_API_KEY);
