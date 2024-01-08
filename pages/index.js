@@ -165,6 +165,7 @@ export default function Home() {
   
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gray-100 p-4 space-y-6">
+    <h1>AI Phone Call</h1>
     {/* Show call failed notification if callFailed is true */}
     {callFailed && (
       <div className="text-red-500 mb-4">
