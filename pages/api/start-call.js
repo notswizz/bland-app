@@ -10,10 +10,10 @@ export default async function handler(req, res) {
         phone_number: req.body.phoneNumber,
         task: req.body.task,
    from: '+14048827923',
-   reduce_latency: true,
-   voice_id:5,
+   reduce_latency: false,
+   voice_id:8,
    wait_for_greeting:true,
-   first_sentence:'Hello, this is Rebeca with The Smith Agency, do you have a moment?',
+   first_sentence:'Hey, can you hear me ok?',
    record:true
       })
     };
