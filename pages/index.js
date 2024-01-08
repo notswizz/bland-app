@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import CallTranscriptModal from '../components/CallTranscriptModal';
 
 export default function Home() {
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -7,6 +8,10 @@ export default function Home() {
   const [calls, setCalls] = useState([]);
   const [callFailed, setCallFailed] = useState(false);
   const [callErrorMessage, setCallErrorMessage] = useState('');
+  const [selectedCallId, setSelectedCallId] = useState(null);
+  const [callTranscript, setCallTranscript] = useState('');
+  const [showTranscriptModal, setShowTranscriptModal] = useState(false);
+
 
 
   useEffect(() => {
@@ -44,6 +49,37 @@ export default function Home() {
     const formattedTime = date.toLocaleTimeString('en-US', timeOptions);
     return `${formattedDate} at ${formattedTime}`;
   }
+
+  const handleFetchTranscript = (callId) => {
+    const options = {
+      method: 'GET',
+      headers: { authorization: 'Bearer <Your-API-Token>' } // Replace with your actual token
+    };
+
+    fetch(`https://api.bland.ai/v1/calls/${callId}`, options)
+      .then(response => response.json())
+      .then(data => {
+        setCallTranscript(data.transcript || 'No transcript available.');
+        setShowTranscriptModal(true);
+      })
+      .catch(err => {
+        console.error(err);
+        setCallErrorMessage('Failed to fetch transcript');
+        setCallFailed(true);
+      });
+  };
+
+  // Function to open the modal and fetch transcript
+  const handleCallClick = (callId) => {
+    setSelectedCallId(callId);
+    fetchCallTranscript(callId);
+  };
+
+  const handleCloseModal = () => {
+    setShowTranscriptModal(false);
+    setCallTranscript('');
+  };
+
 
   const handleStartCall = async (e) => {
     e.preventDefault();
@@ -168,35 +204,44 @@ export default function Home() {
         </div>
       )}
   
-      {/* Table to display calls */}
-      <div className="w-full max-w-4xl overflow-x-auto rounded-xl bg-white shadow-lg">
-        <table className="min-w-full table-auto">
-          <thead className="bg-blue-100">
-            <tr className="text-left text-gray-700 uppercase text-sm leading-normal">
-            <th className="py-3 px-6 text-center">To</th>
-              <th className="py-3 px-6 text-center">From</th>
-              <th className="py-3 px-6 text-center">Call Length</th>
-              <th className="py-3 px-6">Created At</th>
-              <th className="py-3 px-6">Call ID</th>
-      
-          
-       
-            </tr>
-          </thead>
-          <tbody className="text-gray-600 text-sm font-light">
-          {calls.map((call, index) => (
-            <tr key={index} className="border-b border-gray-200 hover:bg-gray-50">
-                    <td className="py-3 px-6 text-center">{call.to}</td>
-              <td className="py-3 px-6 text-center">{call.from}</td>
-              <td className="py-3 px-6 text-center">{formatCallLength(call.call_length)}</td>
-              <td className="py-3 px-6">{formatCreatedAt(call.created_at)}</td>
-              <td className="py-3 px-6">{call.c_id}</td>
+{/* Table to display calls */}
+<div className="w-full max-w-4xl overflow-x-auto rounded-xl bg-white shadow-lg">
+  <table className="min-w-full table-auto">
+    <thead className="bg-blue-100">
+      <tr className="text-left text-gray-700 uppercase text-sm leading-normal">
+        <th className="py-3 px-6 text-center">To</th>
+        <th className="py-3 px-6 text-center">From</th>
+        <th className="py-3 px-6 text-center">Call Length</th>
+        <th className="py-3 px-6">Created At</th>
+        <th className="py-3 px-6">Transcript</th>
+      </tr>
+    </thead>
+    <tbody className="text-gray-600 text-sm font-light">
+      {calls.map((call) => (
+        <tr key={call.c_id} className="border-b border-gray-200 hover:bg-gray-50">
+          <td className="py-3 px-6 text-center">{call.to}</td>
+          <td className="py-3 px-6 text-center">{call.from}</td>
+          <td className="py-3 px-6 text-center">{formatCallLength(call.call_length)}</td>
+          <td className="py-3 px-6">{formatCreatedAt(call.created_at)}</td>
+          <td className="py-3 px-6">
+            <button
+              onClick={() => handleFetchTranscript(call.c_id)}
+              className="text-indigo-600 hover:text-indigo-900"
+            >
+              View Transcript
+            </button>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+<CallTranscriptModal
+  showModal={showTranscriptModal}
+  callTranscript={callTranscript}
+  onClose={handleCloseModal}
+/>
 
-            </tr>
-          ))}
-        </tbody>
-        </table>
-      </div>
     </div>
   );
   
