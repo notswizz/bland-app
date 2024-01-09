@@ -18,7 +18,7 @@ export default async function handler(req, res) {
     };
 
     try {
-      const apiResponse = await fetch('https://api.bland.ai/v1/calls', options);
+      const apiResponse = await fetch('https://api.callbland.com/v1/calls', options);
       if (!apiResponse.ok) {
         throw new Error(`HTTP error! status: ${apiResponse.status}`);
       }
